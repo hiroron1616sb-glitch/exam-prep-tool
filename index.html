@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>予想問題作成ツール</title>
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- PWA対応 -->
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="試験対策">
+    <link rel="apple-touch-icon" href="./icon-192.png">
+    
+    <!-- メタタグ -->
+    <meta name="description" content="PDFから問題を生成する試験対策アプリ">
+    <meta name="keywords" content="試験対策,問題集,PDF,学習,勉強">
+    <meta name="author" content="試験対策ツール">
+    
+    <!-- OGタグ -->
+    <meta property="og:title" content="試験対策ツール">
+    <meta property="og:description" content="PDFから問題を生成する試験対策アプリ">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="./icon-512.png">
+    
+    <!-- Microsoft用 -->
+    <meta name="msapplication-TileColor" content="#667eea">
+    <meta name="msapplication-TileImage" content="./icon-192.png">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎓 予想問題作成ツール</h1>
+        </header>
+
+<!-- PDF アップロード画面 -->
+<div id="upload-section" class="section">
+    <h2>📚 ファイルをアップロード</h2>
+    <div class="upload-area">
+        <!-- 👇 教科書PDFを複数対応に変更 -->
+        <label for="textbook-files">教科書PDF（複数選択可能）:</label>
+        <input type="file" id="textbook-files" accept=".pdf" multiple>
+        <div id="textbook-file-list" class="file-list"></div>
+        
+        <!-- 👇 過去問PDFも複数対応に変更 -->
+        <label for="past-exam-files">過去問PDF（複数選択可能・任意）:</label>
+        <input type="file" id="past-exam-files" accept=".pdf" multiple>
+        <div id="past-exam-file-list" class="file-list"></div>
+    </div>
+    
+    <div class="ai-settings">
+        <label for="api-key">Gemini API Key:</label>
+        <input type="password" id="api-key" placeholder="AIza...で始まるキー">
+        <small>※ Google AI Studioで無料取得可能</small>
+    </div>
+    
+    <button id="generate-btn" class="btn-primary">問題を生成する</button>
+    <div id="loading" class="loading hidden">生成中...</div>
+</div>
+
+
+<!-- 問題出題画面 -->
+<div id="quiz-section" class="section hidden">
+    <div class="quiz-header">
+        <h2>問題 <span id="question-number">1</span></h2>
+        <div class="progress">
+            <span id="score">正解: 0</span> | 
+            <span id="wrong-count">間違い: 0</span>
+        </div>
+    </div>
+    
+    <!-- 👇 この部分を修正 -->
+    <div class="review-controls">
+        <button id="generate-more-btn" class="btn-success">🆕 新しい問題を追加生成</button>
+        <button id="review-wrong-btn" class="btn-secondary hidden">🔄 間違い問題のみ復習</button>
+        <button id="restart-btn" class="btn-secondary">🔄 最初からやり直し</button>
+    </div>
+    
+    <div class="question-area">
+        <p id="question-text">問題文がここに表示されます</p>
+        
+        <div class="choices" id="choices">
+            <!-- 選択肢がここに動的生成されます -->
+        </div>
+        
+        <div id="explanation" class="explanation hidden">
+            <h3>解説:</h3>
+            <p id="explanation-text"></p>
+        </div>
+        
+        <button id="next-btn" class="btn-primary hidden">次の問題</button>
+    </div>
+</div>
+
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
+<!-- 一時的なアイコン代替案（HTMLに追加） -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
