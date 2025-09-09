@@ -2,20 +2,34 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+input, textarea {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
 }
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 16px;
     line-height: 1.6;
     color: #333;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height: 100vh;
+    padding: 0;
+    margin: 0;
+    overflow-x: hidden;
 }
 
 .container {
     max-width: 800px;
+    width: 100%;
     margin: 0 auto;
-    padding: 20px;
+    padding: 10px;
+    box-sizing: border-box;
 }
 
 header {
@@ -25,42 +39,50 @@ header {
 
 header h1 {
     color: white;
-    font-size: 2.5rem;
-    margin-bottom: 10px;
+    font-size: 1.8rem;
+    margin-bottom: 15px;
+    word-break: keep-all;
 }
 
 .section {
     background: white;
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    margin-bottom: 20px;
+    padding: 20px 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    margin-bottom: 10px;
 }
 
 .hidden {
-    display: none;
+    display: none !important;
 }
 
 /* アップロード画面 */
 .upload-area label {
     display: block;
-    margin: 15px 0 5px 0;
+    margin: 20px 0 8px 0;
     font-weight: bold;
+    font-size: 16px;
     color: #555;
 }
 
-.upload-area input[type="file"],
-.ai-settings input {
+.upload-area input[type="file"] {
     width: 100%;
-    padding: 10px;
-    border: 2px solid #ddd;
+    padding: 15px;
+    border: 2px dashed #ddd;
     border-radius: 8px;
     margin-bottom: 15px;
     font-size: 16px;
+    background: #fafafa;
+    cursor: pointer;
+    transition: border-color 0.3s;
+    box-sizing: border-box;
 }
 
-.upload-area input[type="file"]:focus,
-.ai-settings input:focus {
+.upload-area input[type="file"]:hover {
+    border-color: #667eea;
+}
+
+.upload-area input[type="file"]:focus {
     border-color: #667eea;
     outline: none;
 }
@@ -71,32 +93,114 @@ header h1 {
     border-top: 1px solid #eee;
 }
 
-.ai-settings small {
-    color: #888;
-    display: block;
-    margin-top: 5px;
+.ai-settings input {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    font-size: 16px;
+    box-sizing: border-box;
 }
 
+.ai-settings input:focus {
+    border-color: #667eea;
+    outline: none;
+}
+
+.ai-settings small {
+    color: #666;
+    display: block;
+    margin-top: 5px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+/* ボタンスタイル */
 .btn-primary {
     background: linear-gradient(135deg, #667eea, #764ba2);
     color: white;
     border: none;
-    padding: 15px 30px;
-    font-size: 18px;
+    padding: 18px 20px;
+    font-size: 16px;
     border-radius: 8px;
     cursor: pointer;
     width: 100%;
-    margin-top: 20px;
+    margin: 10px 0;
     transition: all 0.3s ease;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
 }
 
 .btn-primary:hover {
-    transform: translateY(-2px);
+    transform: translateY(-1px);
     box-shadow: 0 5px 15px rgba(0,0,0,0.2);
 }
 
 .btn-primary:disabled {
-    background: #ccc;
+    background: #ccc !important;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #6c757d, #495057);
+    color: white;
+    border: none;
+    padding: 18px 20px;
+    font-size: 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    margin: 10px 0;
+    transition: all 0.3s ease;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.btn-secondary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+}
+
+.btn-secondary:disabled {
+    background: #ccc !important;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    border: none;
+    padding: 18px 20px;
+    font-size: 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    margin: 10px 0;
+    transition: all 0.3s ease;
+    font-weight: bold;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.btn-success:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.btn-success:disabled {
+    background: #6c757d !important;
     cursor: not-allowed;
     transform: none;
 }
@@ -104,43 +208,56 @@ header h1 {
 .loading {
     text-align: center;
     color: #667eea;
-    font-size: 18px;
-    margin-top: 20px;
+    font-size: 16px;
+    margin: 20px 0;
+    padding: 20px;
     font-weight: bold;
 }
 
 /* 問題出題画面 */
 .quiz-header {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
+    flex-direction: column;
+    align-items: stretch;
+    margin-bottom: 20px;
     padding-bottom: 15px;
     border-bottom: 2px solid #eee;
 }
 
 .quiz-header h2 {
     color: #333;
+    font-size: 1.4rem;
+    margin-bottom: 10px;
+    text-align: center;
 }
 
 .progress {
     color: #666;
     font-size: 14px;
+    text-align: center;
+}
+
+.review-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
 }
 
 .question-area {
     margin-bottom: 20px;
 }
 
+/* 問題文 - 重要な色指定 */
 #question-text {
-    font-size: 18px;
-    line-height: 1.8;
-    margin-bottom: 25px;
-    padding: 20px;
-    background: #f8f9ff;
+    font-size: 16px;
+    line-height: 1.7;
+    margin-bottom: 20px;
+    padding: 20px 15px;
+    background: #f8f9ff !important;
+    color: #333 !important;
     border-radius: 8px;
     border-left: 4px solid #667eea;
-    color: #333; /* 文字色を明確に指定 */
     word-wrap: break-word;
     overflow-wrap: break-word;
 }
@@ -149,7 +266,7 @@ header h1 {
     margin-bottom: 20px;
 }
 
-/* 選択肢の色も明確に */
+/* 選択肢 - 重要な色指定 */
 .choice {
     width: 100%;
     padding: 20px 15px;
@@ -158,8 +275,8 @@ header h1 {
     line-height: 1.5;
     border: 2px solid #ddd;
     border-radius: 8px;
-    background: white; /* 背景色明確に */
-    color: #333; /* 文字色明確に */
+    background: white !important;
+    color: #333 !important;
     cursor: pointer;
     transition: all 0.3s ease;
     box-sizing: border-box;
@@ -172,215 +289,86 @@ header h1 {
 
 .choice:hover {
     border-color: #667eea;
-    background: #f0f3ff;
-    color: #333; /* ホバー時も文字色維持 */
+    background: #f0f3ff !important;
+    color: #333 !important;
+}
+
+.choice:active {
+    transform: scale(0.98);
 }
 
 .choice.selected {
     border-color: #667eea;
-    background: #e8f0ff;
-    color: #333; /* 選択時も文字色維持 */
+    background: #e8f0ff !important;
+    color: #333 !important;
 }
 
 .choice.correct {
-    border-color: #28a745;
-    background: #d4edda;
-    color: #155724; /* 正解時の文字色 */
+    border-color: #28a745 !important;
+    background: #d4edda !important;
+    color: #155724 !important;
 }
 
 .choice.wrong {
-    border-color: #dc3545;
-    background: #f8d7da;
-    color: #721c24; /* 不正解時の文字色 */
+    border-color: #dc3545 !important;
+    background: #f8d7da !important;
+    color: #721c24 !important;
 }
 
-/* 解説部分も修正 */
+/* 解説 */
 .explanation {
-    padding: 20px 15px;
-    margin-top: 20px;
-    background: #e8f5e8;
+    background: #e8f5e8 !important;
     border: 1px solid #c3e6c3;
+    padding: 20px 15px;
     border-radius: 8px;
-    color: #155724; /* 解説の文字色明確に */
+    margin-top: 20px;
 }
 
 .explanation h3 {
+    color: #155724 !important;
     font-size: 16px;
     margin-bottom: 10px;
-    color: #155724; /* 解説タイトルの文字色 */
 }
 
 .explanation p {
+    color: #155724 !important;
     font-size: 15px;
     line-height: 1.6;
-    color: #155724; /* 解説本文の文字色 */
     word-wrap: break-word;
     overflow-wrap: break-word;
 }
 
-
-/* レスポンシブ対応 */
-@media (max-width: 768px) {
-    .container {
-        padding: 10px;
-    }
-    
-    .section {
-        padding: 20px;
-    }
-    
-    header h1 {
-        font-size: 2rem;
-    }
-    
-    .quiz-header {
-        flex-direction: column;
-        gap: 10px;
-    }
-}
-
-/* 復習コントロール */
-.review-controls {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-    justify-content: center;
-}
-
-.btn-secondary {
-    background: linear-gradient(135deg, #6c757d, #495057);
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    font-size: 14px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.btn-secondary:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-}
-
-.btn-secondary:disabled {
-    background: #ccc;
-    cursor: not-allowed;
-    transform: none;
-}
-
-/* 学習モード表示 */
-.mode-indicator {
-    background: #e3f2fd;
-    border: 1px solid #2196f3;
-    padding: 10px;
-    border-radius: 8px;
-    margin-bottom: 15px;
-    text-align: center;
-    font-weight: bold;
-    color: #1976d2;
-}
-
-.mode-indicator.review {
-    background: #fff3e0;
-    border-color: #ff9800;
-    color: #f57c00;
-}
-
-@media (max-width: 768px) {
-    .review-controls {
-        flex-direction: column;
-    }
-    
-    .btn-secondary {
-        width: 100%;
-    }
-}
-/* 新しい問題生成ボタン */
-.btn-success {
-    background: linear-gradient(135deg, #28a745, #20c997);
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    font-size: 14px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-weight: bold;
-}
-
-.btn-success:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
-}
-
-.btn-success:disabled {
-    background: #6c757d;
-    cursor: not-allowed;
-    transform: none;
-}
-
-/* 復習コントロールのレスポンシブ対応強化 */
-.review-controls {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
-@media (max-width: 768px) {
-    .review-controls {
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .btn-secondary, .btn-success {
-        width: 100%;
-        max-width: 300px;
-    }
-}
-
-/* 生成中の状態表示 */
-.generating {
-    opacity: 0.6;
-    pointer-events: none;
-}
-
-.generating::after {
-    content: " 生成中...";
-    font-size: 12px;
-    color: #666;
-}
-/* ファイルリスト表示 */
+/* ファイルリスト */
 .file-list {
-    margin-top: 10px;
-    margin-bottom: 15px;
-    min-height: 20px;
+    margin-top: 15px;
+    margin-bottom: 20px;
 }
 
 .file-item {
     background: #f8f9fa;
     border: 1px solid #dee2e6;
     border-radius: 6px;
-    padding: 8px 12px;
-    margin-bottom: 5px;
+    padding: 15px 12px;
+    margin-bottom: 8px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
     font-size: 14px;
 }
 
 .file-item .file-name {
     color: #495057;
-    flex-grow: 1;
-    margin-right: 10px;
+    flex: 1;
+    min-width: 0;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .file-item .file-size {
     color: #6c757d;
     font-size: 12px;
-    margin-right: 10px;
+    flex-shrink: 0;
 }
 
 .file-item .remove-btn {
@@ -388,10 +376,12 @@ header h1 {
     color: white;
     border: none;
     border-radius: 4px;
-    padding: 2px 8px;
-    font-size: 12px;
+    padding: 8px 12px;
+    font-size: 14px;
     cursor: pointer;
     transition: background-color 0.3s;
+    min-width: 40px;
+    flex-shrink: 0;
 }
 
 .file-item .remove-btn:hover {
@@ -402,375 +392,46 @@ header h1 {
     background: #e3f2fd;
     border: 1px solid #2196f3;
     border-radius: 6px;
-    padding: 10px;
+    padding: 12px;
     margin-top: 10px;
     font-size: 14px;
     color: #1976d2;
-}
-
-.upload-area input[type="file"] {
-    border: 2px dashed #ddd;
-    border-radius: 8px;
-    padding: 20px;
-    text-align: center;
-    cursor: pointer;
-    transition: border-color 0.3s;
-}
-
-.upload-area input[type="file"]:hover {
-    border-color: #667eea;
-}
-
-.upload-area input[type="file"]:focus {
-    outline: none;
-    border-color: #667eea;
-}
-/* =================================
-   スマホ対応強化
-================================= */
-
-/* タッチデバイス用の基本設定 */
-* {
-    -webkit-tap-highlight-color: transparent;
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-}
-
-input, textarea {
-    -webkit-user-select: text;
-    -moz-user-select: text;
-    -ms-user-select: text;
-    user-select: text;
-}
-
-/* スマホ用のフォントサイズとスペーシング */
-body {
-    font-size: 16px; /* スマホでズームされないように16px以上 */
-    line-height: 1.6;
-    padding: 0;
-    margin: 0;
-    overflow-x: hidden;
-}
-
-.container {
-    width: 100%;
-    max-width: 100%;
-    padding: 10px;
-    box-sizing: border-box;
-}
-
-/* ヘッダーのスマホ対応 */
-header h1 {
-    font-size: 1.8rem;
-    margin-bottom: 15px;
-    text-align: center;
-    word-break: keep-all;
-}
-
-/* セクションのスマホ対応 */
-.section {
-    padding: 20px 15px;
-    margin-bottom: 10px;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-/* アップロード画面のスマホ対応 */
-.upload-area label {
-    font-size: 16px;
-    font-weight: bold;
-    margin: 20px 0 8px 0;
-    display: block;
-}
-
-.upload-area input[type="file"] {
-    width: 100%;
-    padding: 15px;
-    font-size: 16px;
-    border: 2px dashed #ddd;
-    border-radius: 8px;
-    background: #fafafa;
-    margin-bottom: 15px;
-    box-sizing: border-box;
-}
-
-.upload-area input[type="file"]:focus {
-    border-color: #667eea;
-    outline: none;
-}
-
-/* API入力欄のスマホ対応 */
-.ai-settings input {
-    width: 100%;
-    padding: 15px;
-    font-size: 16px;
-    border: 2px solid #ddd;
-    border-radius: 8px;
-    box-sizing: border-box;
-    margin-bottom: 10px;
-}
-
-.ai-settings small {
-    font-size: 14px;
-    color: #666;
-    display: block;
-    margin-top: 5px;
-    line-height: 1.4;
-}
-
-/* ボタンのスマホ対応 */
-.btn-primary, .btn-secondary, .btn-success {
-    width: 100%;
-    padding: 18px 20px;
-    font-size: 16px;
-    border-radius: 8px;
-    border: none;
-    margin: 10px 0;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-sizing: border-box;
-    min-height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.btn-primary:hover, .btn-secondary:hover, .btn-success:hover {
-    transform: translateY(-1px);
-}
-
-/* 問題画面のスマホ対応 */
-.quiz-header {
-    flex-direction: column;
-    align-items: stretch;
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-}
-
-.quiz-header h2 {
-    font-size: 1.4rem;
-    margin-bottom: 10px;
     text-align: center;
 }
 
-.progress {
-    text-align: center;
-    font-size: 14px;
-    color: #666;
-}
-
-/* 復習コントロールのスマホ対応 */
-.review-controls {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 20px;
-}
-
-/* 問題文のスマホ対応 */
-#question-text {
-    font-size: 16px;
-    line-height: 1.7;
-    padding: 20px 15px;
-    margin-bottom: 20px;
-    background: #f8f9ff;
-    color: #333; /* 文字色を明確に指定 */
-    border-radius: 8px;
-    border-left: 4px solid #667eea;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-}
-
-/* 選択肢のスマホ対応 */
-.choices {
-    margin-bottom: 20px;
-}
-
-.choice {
-    width: 100%;
-    padding: 20px 15px;
-    margin-bottom: 12px;
-    font-size: 16px;
-    line-height: 1.5;
-    border: 2px solid #ddd;
-    border-radius: 8px;
-    background: white;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-sizing: border-box;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    min-height: 60px;
-    display: flex;
-    align-items: center;
-}
-
-.choice:hover {
-    border-color: #667eea;
-    background: #f0f3ff;
-    color: #333;
-}
-
-.choice:active {
-    transform: scale(0.98);
-}
-
-.choice.selected {
-    border-color: #667eea;
-    background: #e8f0ff;
-    color: #333;
-}
-
-.choice.correct {
-    border-color: #28a745;
-    background: #d4edda;
-    color: #155724;
-}
-
-.choice.wrong {
-    border-color: #dc3545;
-    background: #f8d7da;
-    color: #721c24;
-}
-
-/* 解説のスマホ対応 */
-.explanation {
-    padding: 20px 15px;
-    margin-top: 20px;
-    background: #e8f5e8;
-    border: 1px solid #c3e6c3;
-    border-radius: 8px;
-}
-
-.explanation h3 {
-    font-size: 16px;
-    margin-bottom: 10px;
-    color: #155724;
-}
-
-.explanation p {
-    font-size: 15px;
-    line-height: 1.6;
-    color: #155724;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-}
-
-/* ファイルリストのスマホ対応 */
-.file-list {
-    margin-top: 15px;
-    margin-bottom: 20px;
-}
-
-.file-item {
-    padding: 15px 12px;
-    margin-bottom: 8px;
-    font-size: 14px;
-    border-radius: 6px;
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.file-item .file-name {
-    flex: 1;
-    min-width: 0;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    font-size: 14px;
-}
-
-.file-item .file-size {
-    font-size: 12px;
-    color: #6c757d;
-    flex-shrink: 0;
-}
-
-.file-item .remove-btn {
-    padding: 8px 12px;
-    font-size: 14px;
-    min-width: 40px;
-    flex-shrink: 0;
-}
-
-.file-summary {
-    padding: 12px;
-    font-size: 14px;
-    text-align: center;
-}
-
-/* モード表示のスマホ対応 */
+/* モード表示 */
 .mode-indicator {
+    background: #e3f2fd;
+    border: 1px solid #2196f3;
     padding: 15px;
+    border-radius: 8px;
     margin-bottom: 15px;
     text-align: center;
+    font-weight: bold;
+    color: #1976d2;
     font-size: 14px;
-    border-radius: 8px;
     word-wrap: break-word;
 }
 
-/* ローディング表示のスマホ対応 */
-.loading {
-    font-size: 16px;
-    padding: 20px;
-    text-align: center;
-    margin: 20px 0;
+.mode-indicator.review {
+    background: #fff3e0;
+    border-color: #ff9800;
+    color: #f57c00;
 }
 
-/* 横画面対応 */
-@media (orientation: landscape) and (max-height: 500px) {
-    .container {
-        padding: 5px;
-    }
-    
-    .section {
-        padding: 15px 10px;
-    }
-    
-    header h1 {
-        font-size: 1.4rem;
-        margin-bottom: 10px;
-    }
-    
-    .choice {
-        padding: 15px 12px;
-        min-height: 50px;
-    }
+/* 生成中状態 */
+.generating {
+    opacity: 0.6;
+    pointer-events: none;
 }
 
-/* 超小型画面対応（小さいスマホ） */
-@media (max-width: 320px) {
-    .container {
-        padding: 8px;
-    }
-    
-    .section {
-        padding: 15px 10px;
-        margin-bottom: 8px;
-    }
-    
-    header h1 {
-        font-size: 1.6rem;
-    }
-    
-    .choice {
-        padding: 15px 10px;
-        font-size: 15px;
-    }
-    
-    .btn-primary, .btn-secondary, .btn-success {
-        padding: 15px;
-        font-size: 15px;
-    }
+.generating::after {
+    content: " 生成中...";
+    font-size: 12px;
+    color: #666;
 }
 
-/* 大型スマホ・タブレット対応 */
+/* タブレット・大型スマホ対応 */
 @media (min-width: 480px) and (max-width: 768px) {
     .container {
         max-width: 600px;
@@ -796,55 +457,85 @@ header h1 {
     }
 }
 
-/* iOS Safari特有の調整 */
-@supports (-webkit-touch-callout: none) {
-    .choice {
-        -webkit-appearance: none;
+/* PC・大画面対応 */
+@media (min-width: 769px) {
+    header h1 {
+        font-size: 2.5rem;
     }
     
-    input[type="file"] {
-        -webkit-appearance: none;
+    .section {
+        padding: 30px;
     }
     
-    input[type="password"] {
-        -webkit-appearance: none;
+    .quiz-header {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .quiz-header h2 {
+        text-align: left;
+        margin-bottom: 0;
+    }
+    
+    .progress {
+        text-align: right;
+    }
+    
+    .review-controls {
+        flex-direction: row;
+        justify-content: center;
+    }
+    
+    .btn-primary, .btn-secondary, .btn-success {
+        width: auto;
+        min-width: 200px;
     }
 }
 
-/* ダークモード対応（オプション） */
-/* ダークモード対応の修正 */
-@media (prefers-color-scheme: dark) {
-    #question-text {
-        background: #4a5568;
-        color: #e2e8f0;
-        border-left-color: #667eea;
+/* 横画面・小さい画面対応 */
+@media (orientation: landscape) and (max-height: 500px) {
+    .container {
+        padding: 5px;
+    }
+    
+    .section {
+        padding: 15px 10px;
+    }
+    
+    header h1 {
+        font-size: 1.4rem;
+        margin-bottom: 10px;
     }
     
     .choice {
-        background: #4a5568;
-        border-color: #718096;
-        color: #e2e8f0;
+        padding: 15px 12px;
+        min-height: 50px;
+    }
+}
+
+/* 超小型画面対応 */
+@media (max-width: 320px) {
+    .container {
+        padding: 8px;
     }
     
-    .choice:hover {
-        background: #5a6578;
-        border-color: #667eea;
-        color: #e2e8f0;
+    .section {
+        padding: 15px 10px;
+        margin-bottom: 8px;
     }
     
-    .choice.selected {
-        background: #667eea;
-        color: white;
+    header h1 {
+        font-size: 1.6rem;
     }
     
-    .explanation {
-        background: #2d3748;
-        border-color: #4a5568;
-        color: #e2e8f0;
+    .choice {
+        padding: 15px 10px;
+        font-size: 15px;
     }
     
-    .explanation h3,
-    .explanation p {
-        color: #e2e8f0;
+    .btn-primary, .btn-secondary, .btn-success {
+        padding: 15px;
+        font-size: 15px;
     }
 }
