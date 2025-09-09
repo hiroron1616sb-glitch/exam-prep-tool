@@ -263,13 +263,199 @@ function removeFile(index, type) {
     }
 }
 
-// 生成データ保存
+// 生成データ保存（確実版）
 function saveGenerationData(textbookText, pastExamText, apiKey) {
-    lastTextbookText = textbookText;
-    lastPastExamText = pastExamText;
-    lastApiKey = apiKey;
+    lastTextbookText = textbookText || '';
+    lastPastExamText = pastExamText || '';
+    lastApiKey = apiKey || '';
     generationCount = 1;
+    
+    console.log('生成データ保存完了:', {
+        textbookLength: lastTextbookText.length,
+        pastExamLength: lastPastExamText.length,
+        hasApiKey: !!lastApiKey
+    });
 }
+// 追加問題生成機能（完全版）
+async function generateMoreQuestions() {
+    if (!lastApiKey) {
+        alert('最初に基本問題を生成してください。');
+        return;
+    }
+    
+    if (!lastTextbookText || lastTextbookText.trim() === '') {
+        alert('教科書データがありません。最初から問題を生成し直してください。');
+        return;
+    }
+    
+    // ローディング状態
+    generateMoreBtn.disabled = true;
+    generateMoreBtn.style.opacity = '0.6';
+    const originalText = generateMoreBtn.textContent;
+    generateMoreBtn.textContent = '🔄 生成中...';
+    
+    try {
+        generationCount++;
+        console.log(`${generationCount}回目の追加問題生成を開始`);
+        
+        // 軽量版プロンプトを使用（スマホ対応）
+        const additionalQuestions = await callGeminiAPIForMore(
+            lastTextbookText, 
+            lastPastExamText, 
+            lastApiKey, 
+            generationCount
+        );
+        
+        if (additionalQuestions && additionalQuestions.length > 0) {
+            // 既存の問題に追加
+            const newQuestionCount = additionalQuestions.length;
+            originalQuestions.push(...additionalQuestions);
+            
+            // 現在のモードに応じて問題を追加
+            if (studyMode === 'normal') {
+                questions.push(...additionalQuestions);
+            }
+            
+            // モード表示を更新
+            updateModeDisplay();
+            
+            // 成功メッセージ
+            const message = isMobile ? 
+                `📱 新しい問題を ${newQuestionCount}問 追加しました！\n\n総問題数: ${originalQuestions.length}問` :
+                `✅ 新しい問題を ${newQuestionCount}問 追加しました！\n\n現在の問題総数: ${originalQuestions.length}問\n生成回数: ${generationCount}回`;
+            
+            alert(message);
+            
+            console.log(`問題追加完了: +${newQuestionCount}問（総計: ${originalQuestions.length}問）`);
+        } else {
+            alert('❌ 追加問題の生成に失敗しました。\n\nしばらく待ってから再試行してください。');
+        }
+        
+    } catch (error) {
+        console.error('追加問題生成エラー:', error);
+        alert('❌ 追加問題生成でエラーが発生しました:\n' + error.message + '\n\nネットワーク接続を確認してから再試行してください。');
+    } finally {
+        generateMoreBtn.disabled = false;
+        generateMoreBtn.style.opacity = '1';
+        generateMoreBtn.textContent = originalText;
+    }
+}
+
+// 追加問題用のGemini API呼び出し（軽量版）
+async function callGeminiAPIForMore(textbookText, pastExamText, apiKey, generationNumber) {
+    const prompt = createAdditionalPromptLightweight(textbookText, pastExamText, generationNumber);
+    
+    try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [{
+                        text: prompt
+                    }]
+                }],
+                generationConfig: {
+                    temperature: 0.8,
+                    maxOutputTokens: isMobile ? 4000 : 8000,
+                    topP: 0.9,
+                    topK: 50
+                }
+            })
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('追加問題API エラー:', errorText);
+            throw new Error(`API呼び出しに失敗しました: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
+            console.error('API応答エラー:', data);
+            throw new Error('APIからの応答が不正です');
+        }
+        
+        const content = data.candidates[0].content.parts[0].text;
+        console.log(`${generationNumber}回目のAPI応答:`, content.length, '文字');
+        
+        return parseQuestions(content);
+        
+    } catch (error) {
+        console.error('追加問題API呼び出しエラー:', error);
+        throw error;
+    }
+}
+
+// 追加問題用の軽量プロンプト作成
+function createAdditionalPromptLightweight(textbookText, pastExamText, generationNumber) {
+    // 教科書の異なる部分にフォーカス（軽量版）
+    const maxLength = isMobile ? 15000 : 30000;
+    const startIndex = ((generationNumber - 1) * 10000) % textbookText.length;
+    const endIndex = Math.min(startIndex + maxLength, textbookText.length);
+    const focusedText = textbookText.substring(startIndex, endIndex);
+    
+    const questionCount = isMobile ? 5 : 10; // モバイルは5問、PCは10問
+    
+    let prompt = `
+これは${generationNumber}回目の問題生成です。前回とは異なる新しい観点から、${questionCount}問作成してください。
+
+## 重要な指示:
+- 前回と重複しない、新しい視点の問題を作成
+- より${getGenerationFocus(generationNumber)}な内容にフォーカス
+
+## 教科書の内容:
+${focusedText}
+`;
+
+    if (pastExamText && pastExamText.trim() && !isMobile) {
+        prompt += `
+## 過去問の参考:
+${pastExamText.substring(0, 2000)}
+`;
+    }
+
+    prompt += `
+## 回答形式:
+必ず以下のJSON形式で${questionCount}問作成してください：
+
+\`\`\`json
+[
+  {
+    "question": "問題文",
+    "choices": ["選択肢A", "選択肢B", "選択肢C", "選択肢D", "選択肢E"],
+    "correctAnswer": 0,
+    "explanation": "詳細な解説"
+  }
+]
+\`\`\`
+
+注意事項:
+- 前回と同じような問題は避ける
+- より深い理解を要求する問題を作成
+- 実際の試験で出題されそうな実用性の高い問題
+`;
+
+    return prompt;
+}
+
+// 生成回数に応じたフォーカス（軽量版）
+function getGenerationFocus(generationNumber) {
+    const focuses = [
+        "基本的", // 1回目
+        "応用的", // 2回目
+        "実践的", // 3回目
+        "統合的", // 4回目
+        "発展的"  // 5回目以降
+    ];
+    
+    const index = Math.min(generationNumber - 1, focuses.length - 1);
+    return focuses[index];
+}
+
 
 // 問題初期化（復習機能対応）
 function initializeQuestions(generatedQuestions) {
@@ -594,16 +780,188 @@ function showResults() {
     }
 }
 
-// 追加問題生成機能（簡略版）
-function generateMoreQuestions() {
+// 追加問題生成機能（完全版）
+async function generateMoreQuestions() {
     if (!lastApiKey) {
         alert('最初に基本問題を生成してください。');
         return;
     }
     
-    alert('追加問題生成機能は開発中です。現在の問題を最初から再実行してください。');
+    if (!lastTextbookText || lastTextbookText.trim() === '') {
+        alert('教科書データがありません。最初から問題を生成し直してください。');
+        return;
+    }
+    
+    // ローディング状態
+    generateMoreBtn.disabled = true;
+    generateMoreBtn.style.opacity = '0.6';
+    const originalText = generateMoreBtn.textContent;
+    generateMoreBtn.textContent = '🔄 生成中...';
+    
+    try {
+        generationCount++;
+        console.log(`${generationCount}回目の追加問題生成を開始`);
+        
+        // 軽量版プロンプトを使用（スマホ対応）
+        const additionalQuestions = await callGeminiAPIForMore(
+            lastTextbookText, 
+            lastPastExamText, 
+            lastApiKey, 
+            generationCount
+        );
+        
+        if (additionalQuestions && additionalQuestions.length > 0) {
+            // 既存の問題に追加
+            const newQuestionCount = additionalQuestions.length;
+            originalQuestions.push(...additionalQuestions);
+            
+            // 現在のモードに応じて問題を追加
+            if (studyMode === 'normal') {
+                questions.push(...additionalQuestions);
+            }
+            
+            // モード表示を更新
+            updateModeDisplay();
+            
+            // 成功メッセージ
+            const message = isMobile ? 
+                `📱 新しい問題を ${newQuestionCount}問 追加しました！\n\n総問題数: ${originalQuestions.length}問` :
+                `✅ 新しい問題を ${newQuestionCount}問 追加しました！\n\n現在の問題総数: ${originalQuestions.length}問\n生成回数: ${generationCount}回`;
+            
+            alert(message);
+            
+            console.log(`問題追加完了: +${newQuestionCount}問（総計: ${originalQuestions.length}問）`);
+        } else {
+            alert('❌ 追加問題の生成に失敗しました。\n\nしばらく待ってから再試行してください。');
+        }
+        
+    } catch (error) {
+        console.error('追加問題生成エラー:', error);
+        alert('❌ 追加問題生成でエラーが発生しました:\n' + error.message + '\n\nネットワーク接続を確認してから再試行してください。');
+    } finally {
+        generateMoreBtn.disabled = false;
+        generateMoreBtn.style.opacity = '1';
+        generateMoreBtn.textContent = originalText;
+    }
 }
 
+// 追加問題用のGemini API呼び出し（軽量版）
+async function callGeminiAPIForMore(textbookText, pastExamText, apiKey, generationNumber) {
+    const prompt = createAdditionalPromptLightweight(textbookText, pastExamText, generationNumber);
+    
+    try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [{
+                        text: prompt
+                    }]
+                }],
+                generationConfig: {
+                    temperature: 0.8, // より多様性を増やす
+                    maxOutputTokens: isMobile ? 4000 : 8000, // モバイル対応
+                    topP: 0.9,
+                    topK: 50
+                }
+            })
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('追加問題API エラー:', errorText);
+            throw new Error(`API呼び出しに失敗しました: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
+            console.error('API応答エラー:', data);
+            throw new Error('APIからの応答が不正です');
+        }
+        
+        const content = data.candidates[0].content.parts[0].text;
+        console.log(`${generationNumber}回目のAPI応答:`, content.length, '文字');
+        
+        return parseQuestions(content);
+        
+    } catch (error) {
+        console.error('追加問題API呼び出しエラー:', error);
+        throw error;
+    }
+}
+
+// 追加問題用の軽量プロンプト作成
+function createAdditionalPromptLightweight(textbookText, pastExamText, generationNumber) {
+    // 教科書の異なる部分にフォーカス（軽量版）
+    const maxLength = isMobile ? 15000 : 30000;
+    const startIndex = ((generationNumber - 1) * 10000) % textbookText.length;
+    const endIndex = Math.min(startIndex + maxLength, textbookText.length);
+    const focusedText = textbookText.substring(startIndex, endIndex);
+    
+    const questionCount = isMobile ? 5 : 10; // モバイルは5問、PCは10問
+    
+    let prompt = `
+これは${generationNumber}回目の問題生成です。前回とは異なる新しい観点から、${questionCount}問作成してください。
+
+## 重要な指示:
+- 前回と重複しない、新しい視点の問題を作成
+- より${getGenerationFocus(generationNumber)}な内容にフォーカス
+
+## 教科書の内容:
+${focusedText}
+`;
+
+    if (pastExamText && pastExamText.trim() && !isMobile) {
+        prompt += `
+## 過去問の参考:
+${pastExamText.substring(0, 2000)}
+`;
+    }
+
+    prompt += `
+## 回答形式:
+必ず以下のJSON形式で${questionCount}問作成してください：
+
+\`\`\`json
+[
+  {
+    "question": "問題文",
+    "choices": ["選択肢A", "選択肢B", "選択肢C", "選択肢D", "選択肢E"],
+    "correctAnswer": 0,
+    "explanation": "詳細な解説"
+  }
+]
+\`\`\`
+
+注意事項:
+- 前回と同じような問題は避ける
+- より深い理解を要求する問題を作成
+- 実際の試験で出題されそうな実用性の高い問題
+`;
+
+    return prompt;
+}
+
+// 生成回数に応じたフォーカス（軽量版）
+function getGenerationFocus(generationNumber) {
+    const focuses = [
+        "基本的", // 1回目
+        "応用的", // 2回目
+        "実践的", // 3回目
+        "統合的", // 4回目
+        "発展的"  // 5回目以降
+    ];
+    
+    const index = Math.min(generationNumber - 1, focuses.length - 1);
+    return focuses[index];
+}
+
+// 既存のsaveGenerationData関数が呼び出されるように修正
+// generateQuestionsLightweight関数内で確実にsaveGenerationDataが呼び出されるように確認
 
 
 // スマホ用の追加機能
@@ -854,4 +1212,5 @@ function trackAppUsage() {
 }
 
 // アプリ初期化時に統計を更新
+
 document.addEventListener('DOMContentLoaded', trackAppUsage);
