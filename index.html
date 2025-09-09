@@ -78,21 +78,66 @@
         <button id="restart-btn" class="btn-secondary">🔄 最初からやり直し</button>
     </div>
     
-    <div class="question-area">
-        <p id="question-text">問題文がここに表示されます</p>
-        
-        <div class="choices" id="choices">
-            <!-- 選択肢がここに動的生成されます -->
-        </div>
-        
-        <div id="explanation" class="explanation hidden">
-            <h3>解説:</h3>
-            <p id="explanation-text"></p>
-        </div>
-        
-        <button id="next-btn" class="btn-primary hidden">次の問題</button>
+<div class="question-area">
+    <p id="question-text">問題文がここに表示されます</p>
+    
+    <div class="choices" id="choices">
+        <!-- 選択肢がここに動的生成されます -->
     </div>
+    
+    <div id="explanation" class="explanation hidden">
+        <div class="explanation-header">
+            <h3>解説:</h3>
+            <div class="explanation-controls">
+                <button id="question-quality-btn" class="btn-quality">🤔 解説について質問</button>
+                <button id="report-problem-btn" class="btn-report">⚠️ 問題を報告</button>
+            </div>
+        </div>
+        <p id="explanation-text"></p>
+        
+        <!-- 質問・報告フォーム -->
+        <div id="quality-form" class="quality-form hidden">
+            <div class="form-tabs">
+                <button class="tab-btn active" data-tab="question">解説への質問</button>
+                <button class="tab-btn" data-tab="report">問題報告</button>
+            </div>
+            
+            <!-- 質問タブ -->
+            <div id="question-tab" class="tab-content active">
+                <textarea id="question-input" placeholder="解説について質問してください...&#10;例：「なぜ選択肢Bが間違いなのですか？」&#10;「この解説の根拠を教えてください」"></textarea>
+                <button id="ask-question-btn" class="btn-primary">📝 AIに質問する</button>
+            </div>
+            
+            <!-- 報告タブ -->
+            <div id="report-tab" class="tab-content">
+                <div class="report-options">
+                    <label><input type="checkbox" name="issue" value="解説が間違っている"> 解説が間違っている</label>
+                    <label><input type="checkbox" name="issue" value="選択肢と解説が矛盾"> 選択肢と解説が矛盾している</label>
+                    <label><input type="checkbox" name="issue" value="問題文が不明確"> 問題文が不明確</label>
+                    <label><input type="checkbox" name="issue" value="複数正解がある"> 複数の正解がありそう</label>
+                    <label><input type="checkbox" name="issue" value="その他"> その他</label>
+                </div>
+                <textarea id="report-details" placeholder="詳細な報告内容を記入してください..."></textarea>
+                <div class="report-actions">
+                    <button id="exclude-question-btn" class="btn-danger">🗑️ この問題を除外</button>
+                    <button id="improve-question-btn" class="btn-secondary">🔧 AIに修正依頼</button>
+                </div>
+            </div>
+            
+            <button id="close-form-btn" class="btn-close">✕ 閉じる</button>
+        </div>
+        
+        <!-- AI応答表示 -->
+        <div id="ai-response" class="ai-response hidden">
+            <h4>🤖 AI回答:</h4>
+            <div id="ai-response-text"></div>
+            <button id="close-response-btn" class="btn-close">閉じる</button>
+        </div>
+    </div>
+    
+    <button id="next-btn" class="btn-primary hidden">次の問題</button>
 </div>
+
 
 
 
@@ -102,3 +147,4 @@
 </html>
 <!-- 一時的なアイコン代替案（HTMLに追加） -->
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
+
