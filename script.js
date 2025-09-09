@@ -1214,3 +1214,439 @@ function trackAppUsage() {
 // アプリ初期化時に統計を更新
 
 document.addEventListener('DOMContentLoaded', trackAppUsage);
+// 問題品質管理機能
+let excludedQuestions = []; // 除外された問題のリスト
+let questionQualityCache = {}; // AI応答のキャッシュ
+
+// DOM要素（品質管理用）
+let questionQualityBtn, reportProblemBtn, qualityForm, closeFormBtn;
+let questionTab, reportTab, questionInput, reportDetails;
+let askQuestionBtn, excludeQuestionBtn, improveQuestionBtn;
+let aiResponse, aiResponseText, closeResponseBtn;
+
+// 品質管理機能の初期化
+document.addEventListener('DOMContentLoaded', function() {
+    // 既存の初期化後に追加
+    initQualityManagement();
+});
+
+function initQualityManagement() {
+    // DOM要素取得
+    questionQualityBtn = document.getElementById('question-quality-btn');
+    reportProblemBtn = document.getElementById('report-problem-btn');
+    qualityForm = document.getElementById('quality-form');
+    closeFormBtn = document.getElementById('close-form-btn');
+    
+    questionTab = document.getElementById('question-tab');
+    reportTab = document.getElementById('report-tab');
+    questionInput = document.getElementById('question-input');
+    reportDetails = document.getElementById('report-details');
+    
+    askQuestionBtn = document.getElementById('ask-question-btn');
+    excludeQuestionBtn = document.getElementById('exclude-question-btn');
+    improveQuestionBtn = document.getElementById('improve-question-btn');
+    
+    aiResponse = document.getElementById('ai-response');
+    aiResponseText = document.getElementById('ai-response-text');
+    closeResponseBtn = document.getElementById('close-response-btn');
+    
+    // イベントリスナー設定
+    if (questionQualityBtn) questionQualityBtn.addEventListener('click', () => showQualityForm('question'));
+    if (reportProblemBtn) reportProblemBtn.addEventListener('click', () => showQualityForm('report'));
+    if (closeFormBtn) closeFormBtn.addEventListener('click', hideQualityForm);
+    if (closeResponseBtn) closeResponseBtn.addEventListener('click', hideAIResponse);
+    
+    if (askQuestionBtn) askQuestionBtn.addEventListener('click', askQuestionAboutExplanation);
+    if (excludeQuestionBtn) excludeQuestionBtn.addEventListener('click', excludeCurrentQuestion);
+    if (improveQuestionBtn) improveQuestionBtn.addEventListener('click', improveCurrentQuestion);
+    
+    // タブ切り替え
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const tabName = e.target.dataset.tab;
+            switchTab(tabName);
+        });
+    });
+}
+
+// 品質フォーム表示
+function showQualityForm(tab = 'question') {
+    if (qualityForm) {
+        qualityForm.classList.remove('hidden');
+        switchTab(tab);
+        hideAIResponse();
+    }
+}
+
+// 品質フォーム非表示
+function hideQualityForm() {
+    if (qualityForm) {
+        qualityForm.classList.add('hidden');
+    }
+    hideAIResponse();
+}
+
+// AI応答非表示
+function hideAIResponse() {
+    if (aiResponse) {
+        aiResponse.classList.add('hidden');
+    }
+}
+
+// タブ切り替え
+function switchTab(tabName) {
+    // タブボタンの状態更新
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tabName);
+    });
+    
+    // タブコンテンツの表示切り替え
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.toggle('active', content.id === `${tabName}-tab`);
+    });
+}
+
+// 解説への質問機能
+async function askQuestionAboutExplanation() {
+    const question = questions[currentQuestionIndex];
+    const userQuestion = questionInput.value.trim();
+    
+    if (!userQuestion) {
+        alert('質問を入力してください。');
+        return;
+    }
+    
+    if (!lastApiKey) {
+        alert('APIキーが設定されていません。');
+        return;
+    }
+    
+    // ローディング状態
+    askQuestionBtn.disabled = true;
+    askQuestionBtn.innerHTML = '<span class="loading-response"></span>回答生成中...';
+    
+    try {
+        // キャッシュチェック
+        const cacheKey = `${question.question}_${userQuestion}`;
+        if (questionQualityCache[cacheKey]) {
+            showAIResponse(questionQualityCache[cacheKey]);
+            return;
+        }
+        
+        // AIに質問
+        const response = await askAIAboutQuestion(question, userQuestion, lastApiKey);
+        
+        // キャッシュに保存
+        questionQualityCache[cacheKey] = response;
+        
+        // 応答表示
+        showAIResponse(response);
+        
+    } catch (error) {
+        console.error('質問処理エラー:', error);
+        alert('質問の処理中にエラーが発生しました: ' + error.message);
+    } finally {
+        askQuestionBtn.disabled = false;
+        askQuestionBtn.innerHTML = '📝 AIに質問する';
+    }
+}
+
+// AIに問題について質問
+async function askAIAboutQuestion(question, userQuestion, apiKey) {
+    const prompt = `
+以下の問題と解説について、ユーザーからの質問に詳しく回答してください。
+
+【問題】
+${question.question}
+
+【選択肢】
+${question.choices.map((choice, index) => `${String.fromCharCode(65 + index)}. ${choice}`).join('\n')}
+
+【正解】
+${String.fromCharCode(65 + question.correctAnswer)}. ${question.choices[question.correctAnswer]}
+
+【現在の解説】
+${question.explanation}
+
+【ユーザーの質問】
+${userQuestion}
+
+以下の点に注意して回答してください：
+1. ユーザーの質問に直接的に答える
+2. 根拠や理由を明確に示す
+3. もし現在の解説に不備がある場合は指摘する
+4. 追加の情報や補足説明を提供する
+5. 分かりやすく丁寧に説明する
+
+回答:`;
+
+    try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [{
+                        text: prompt
+                    }]
+                }],
+                generationConfig: {
+                    temperature: 0.7,
+                    maxOutputTokens: 2000,
+                    topP: 0.8,
+                    topK: 40
+                }
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`API呼び出し失敗: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
+            throw new Error('APIからの応答が不正です');
+        }
+        
+        return data.candidates[0].content.parts[0].text;
+        
+    } catch (error) {
+        console.error('AI質問API呼び出しエラー:', error);
+        throw error;
+    }
+}
+
+// AI応答表示
+function showAIResponse(responseText) {
+    if (aiResponseText) {
+        aiResponseText.textContent = responseText;
+    }
+    if (aiResponse) {
+        aiResponse.classList.remove('hidden');
+    }
+    
+    // フォームをスクロールして応答が見えるようにする
+    setTimeout(() => {
+        if (aiResponse) {
+            aiResponse.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }, 100);
+}
+
+// 現在の問題を除外
+function excludeCurrentQuestion() {
+    const question = questions[currentQuestionIndex];
+    
+    // 報告理由を取得
+    const selectedIssues = Array.from(document.querySelectorAll('input[name="issue"]:checked'))
+        .map(cb => cb.value);
+    const details = reportDetails ? reportDetails.value.trim() : '';
+    
+    const confirmMessage = selectedIssues.length > 0 
+        ? `この問題を除外しますか？\n\n報告理由: ${selectedIssues.join(', ')}`
+        : 'この問題を除外しますか？';
+    
+    if (!confirm(confirmMessage)) {
+        return;
+    }
+    
+    // 除外リストに追加
+    excludedQuestions.push({
+        question: question,
+        index: currentQuestionIndex,
+        issues: selectedIssues,
+        details: details,
+        timestamp: new Date().toISOString()
+    });
+    
+    // 問題セットから削除
+    questions.splice(currentQuestionIndex, 1);
+    originalQuestions = originalQuestions.filter(q => q.question !== question.question);
+    
+    // インデックス調整
+    if (currentQuestionIndex >= questions.length) {
+        currentQuestionIndex = questions.length - 1;
+    }
+    
+    // ローカルストレージに保存
+    saveAppData('excludedQuestions', excludedQuestions);
+    
+    hideQualityForm();
+    
+    // 次の問題表示または終了
+    if (questions.length === 0) {
+        alert('すべての問題が除外されました。新しい問題を生成してください。');
+        uploadSection.classList.remove('hidden');
+        quizSection.classList.add('hidden');
+    } else if (currentQuestionIndex < 0) {
+        currentQuestionIndex = 0;
+        showQuestion();
+    } else {
+        showQuestion();
+    }
+    
+    console.log(`問題を除外しました。残り: ${questions.length}問`);
+}
+
+// 問題改善要求
+async function improveCurrentQuestion() {
+    const question = questions[currentQuestionIndex];
+    
+    if (!lastApiKey) {
+        alert('APIキーが設定されていません。');
+        return;
+    }
+    
+    // 報告内容を取得
+    const selectedIssues = Array.from(document.querySelectorAll('input[name="issue"]:checked'))
+        .map(cb => cb.value);
+    const details = reportDetails ? reportDetails.value.trim() : '';
+    
+    if (selectedIssues.length === 0 && !details) {
+        alert('改善要求の内容を入力してください。');
+        return;
+    }
+    
+    // ローディング状態
+    improveQuestionBtn.disabled = true;
+    improveQuestionBtn.innerHTML = '<span class="loading-response"></span>修正中...';
+    
+    try {
+        const improvedQuestion = await requestQuestionImprovement(question, selectedIssues, details, lastApiKey);
+        
+        if (improvedQuestion) {
+            // 現在の問題を改善版に置き換え
+            questions[currentQuestionIndex] = improvedQuestion;
+            
+            // 元の問題セットも更新
+            const originalIndex = originalQuestions.findIndex(q => q.question === question.question);
+            if (originalIndex !== -1) {
+                originalQuestions[originalIndex] = improvedQuestion;
+            }
+            
+            // 画面を更新
+            hideQualityForm();
+            showQuestion();
+            
+            alert('✅ 問題が改善されました！新しい解説を確認してください。');
+        }
+        
+    } catch (error) {
+        console.error('問題改善エラー:', error);
+        alert('問題の改善中にエラーが発生しました: ' + error.message);
+    } finally {
+        improveQuestionBtn.disabled = false;
+        improveQuestionBtn.innerHTML = '🔧 AIに修正依頼';
+    }
+}
+
+// 問題改善をAIに依頼
+async function requestQuestionImprovement(question, issues, details, apiKey) {
+    const prompt = `
+以下の問題について、指摘された問題点を修正してください。
+
+【現在の問題】
+問題文: ${question.question}
+選択肢: ${question.choices.map((choice, index) => `${String.fromCharCode(65 + index)}. ${choice}`).join('\n')}
+正解: ${String.fromCharCode(65 + question.correctAnswer)}. ${question.choices[question.correctAnswer]}
+解説: ${question.explanation}
+
+【指摘された問題点】
+${issues.length > 0 ? issues.join(', ') : ''}
+${details ? `詳細: ${details}` : ''}
+
+【修正指示】
+1. 指摘された問題点を解決してください
+2. 解説の正確性を向上させてください
+3. 選択肢と解説の一貫性を保ってください
+4. より明確で理解しやすい解説にしてください
+
+修正された問題をJSON形式で回答してください：
+
+\`\`\`json
+{
+  "question": "修正された問題文",
+  "choices": ["選択肢A", "選択肢B", "選択肢C", "選択肢D", "選択肢E"],
+  "correctAnswer": 0,
+  "explanation": "修正された詳細な解説"
+}
+\`\`\``;
+
+    try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [{
+                        text: prompt
+                    }]
+                }],
+                generationConfig: {
+                    temperature: 0.7,
+                    maxOutputTokens: 2000,
+                    topP: 0.8,
+                    topK: 40
+                }
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`API呼び出し失敗: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        const content = data.candidates[0].content.parts[0].text;
+        
+        // JSONを解析
+        const jsonMatch = content.match(/```json\n?([\s\S]*?)\n?```/);
+        if (jsonMatch) {
+            const improvedQuestion = JSON.parse(jsonMatch[1].trim());
+            return improvedQuestion;
+        }
+        
+        throw new Error('改善された問題のJSON解析に失敗しました');
+        
+    } catch (error) {
+        console.error('問題改善API呼び出しエラー:', error);
+        throw error;
+    }
+}
+
+// ローカルストレージ関数（既存の関数が無い場合）
+if (typeof saveAppData === 'undefined') {
+    function saveAppData(key, data) {
+        try {
+            localStorage.setItem(`exam-tool-${key}`, JSON.stringify(data));
+        } catch (e) {
+            console.error('データ保存エラー:', e);
+        }
+    }
+}
+
+if (typeof loadAppData === 'undefined') {
+    function loadAppData(key) {
+        try {
+            const data = localStorage.getItem(`exam-tool-${key}`);
+            return data ? JSON.parse(data) : null;
+        } catch (e) {
+            console.error('データ読み込みエラー:', e);
+            return null;
+        }
+    }
+}
+
+// アプリ開始時に除外された問題を読み込み
+document.addEventListener('DOMContentLoaded', function() {
+    const savedExcluded = loadAppData('excludedQuestions');
+    if (savedExcluded) {
+        excludedQuestions = savedExcluded;
+        console.log(`除外された問題を読み込みました: ${excludedQuestions.length}問`);
+    }
+});
+
