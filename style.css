@@ -539,3 +539,255 @@ header h1 {
         font-size: 15px;
     }
 }
+/* 問題品質管理機能のスタイル */
+.explanation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.explanation-controls {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.btn-quality, .btn-report {
+    background: #17a2b8;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    font-size: 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.btn-quality:hover {
+    background: #138496;
+}
+
+.btn-report {
+    background: #fd7e14;
+}
+
+.btn-report:hover {
+    background: #e8690b;
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    font-size: 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-right: 10px;
+}
+
+.btn-danger:hover {
+    background: #c82333;
+}
+
+.btn-close {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    font-size: 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.btn-close:hover {
+    background: #5a6268;
+}
+
+.quality-form {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 15px;
+}
+
+.form-tabs {
+    display: flex;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #6c757d;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.tab-btn.active {
+    color: #667eea;
+    border-bottom-color: #667eea;
+}
+
+.tab-btn:hover {
+    color: #667eea;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+#question-input, #report-details {
+    width: 100%;
+    min-height: 80px;
+    padding: 15px;
+    border: 2px solid #dee2e6;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+    margin-bottom: 15px;
+    box-sizing: border-box;
+}
+
+#question-input:focus, #report-details:focus {
+    border-color: #667eea;
+    outline: none;
+}
+
+.report-options {
+    margin-bottom: 15px;
+}
+
+.report-options label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.report-options input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+.report-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.ai-response {
+    background: #e8f4fd;
+    border: 1px solid #bee5eb;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 15px;
+}
+
+.ai-response h4 {
+    color: #0c5460;
+    margin-bottom: 15px;
+    font-size: 16px;
+}
+
+#ai-response-text {
+    color: #0c5460;
+    line-height: 1.6;
+    font-size: 14px;
+    white-space: pre-wrap;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    .explanation-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .explanation-controls {
+        justify-content: center;
+    }
+    
+    .btn-quality, .btn-report {
+        flex: 1;
+        text-align: center;
+        min-width: 120px;
+    }
+    
+    .form-tabs {
+        flex-direction: column;
+    }
+    
+    .tab-btn {
+        text-align: center;
+        border-bottom: none;
+        border-right: 2px solid transparent;
+    }
+    
+    .tab-btn.active {
+        border-right-color: #667eea;
+        border-bottom-color: transparent;
+    }
+    
+    .report-actions {
+        flex-direction: column;
+    }
+    
+    .btn-danger {
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+}
+
+/* 問題除外時のスタイル */
+.question-excluded {
+    opacity: 0.5;
+    position: relative;
+}
+
+.question-excluded::before {
+    content: "🗑️ 除外された問題";
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #dc3545;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    z-index: 10;
+}
+
+/* ローディング状態 */
+.loading-response {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-right: 10px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
